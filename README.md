@@ -700,12 +700,11 @@ The underlying dataset is published by Olist and Kaggle under the [CC BY-NC-SA 4
 ## 21. Contact
 
 **Rameez**  
-*Senior Data Analyst / Analytics Engineer*
+*Data Analytics Project*
 
-- 💼 **LinkedIn**: [linkedin.com/in/your-profile](https://linkedin.com/in/your-profile)
-- 🐙 **GitHub**: [github.com/your-username](https://github.com/your-username)
-- 📧 **Email**: [your.email@example.com](mailto:your.email@example.com)
-- 🌐 **Portfolio**: [yourportfolio.com](https://yourportfolio.com)
+- 💼 **LinkedIn**: [linkedin.com/in/rameezraza](https://www.linkedin.com/in/rameezraza/)
+- 🐙 **GitHub**: [github.com/Rameez-raza9](https://github.com/Rameez-raza9)
+- 📧 **Email**: [dynamicrameez0786@gmail.com](mailto:dynamicrameez0786@gmail.com)
 
 ---
 *Developed with analytical rigor to drive tangible commercial growth and customer lifetime value.*
