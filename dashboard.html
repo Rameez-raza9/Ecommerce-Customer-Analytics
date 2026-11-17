@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Commerce Customer Analytics Dashboard | Olist Brazil</title>
+  <meta name="description" content="Interactive analytics dashboard for Olist Brazilian E-Commerce: RFM segmentation, cohort retention, churn analysis, revenue insights across 99,441 orders." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <style>
+    :root {
+      --bg-primary:   #0d0f1a;
+      --bg-secondary: #131627;
+      --bg-card:      #181c2e;
+      --bg-card-hover:#1e2340;
+      --border:       #252d4a;
+      --border-glow:  #334080;
+      --emerald:      #00b894;
+      --cyan:         #00cec9;
+      --coral:        #e94560;
+      --amber:        #f39c12;
+      --blue:         #74b9ff;
+      --purple:       #a29bfe;
+      --magenta:      #e84393;
+      --yellow:       #fdcb6e;
+      --slate:        #636e72;
+      --charcoal:     #2d3436;
+      --text-primary: #ffffff;
+      --text-secondary:#a0a0b0;
+      --text-muted:   #606070;
+      --navy-dark:    #0f3460;
+      --navy-mid:     #16213e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── TOP NAV ─── */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,15,26,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .topnav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--emerald), var(--cyan));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .brand-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+    .brand-sub   { font-size: 11px; color: var(--text-secondary); }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+    }
+    .nav-tab {
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .nav-tab:hover { background: var(--bg-card); color: var(--text-primary); }
+    .nav-tab.active {
+      background: var(--navy-dark);
+      color: var(--cyan);
+      box-shadow: 0 0 0 1px var(--border-glow);
+    }
+
+    .nav-badge {
+      background: linear-gradient(135deg,#00b894,#00cec9);
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    /* ─── MAIN CONTENT ─── */
+    .main {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 28px 24px 60px;
+    }
+
+    /* ─── PAGES ─── */
+    .page { display: none; animation: fadeIn 0.3s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .page-title   { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+    .page-subtitle{ font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .page-title span { 
+      background: linear-gradient(90deg, var(--emerald), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .data-badge {
+      font-size: 11px; color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 5px 12px; border-radius: 20px;
+    }
+
+    /* ─── KPI CARDS ROW ─── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      border-color: var(--border-glow);
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .kpi-card.emerald::before { background: linear-gradient(90deg, var(--emerald), var(--cyan)); }
+    .kpi-card.coral::before   { background: linear-gradient(90deg, var(--coral), var(--magenta)); }
+    .kpi-card.amber::before   { background: linear-gradient(90deg, var(--amber), var(--yellow)); }
+    .kpi-card.blue::before    { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+    .kpi-card.cyan::before    { background: linear-gradient(90deg, var(--cyan), var(--emerald)); }
+    .kpi-card.purple::before  { background: linear-gradient(90deg, var(--purple), var(--magenta)); }
+
+    .kpi-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .kpi-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+    .kpi-value.emerald { color: var(--emerald); }
+    .kpi-value.coral   { color: var(--coral); }
+    .kpi-value.amber   { color: var(--amber); }
+    .kpi-value.blue    { color: var(--blue); }
+    .kpi-value.cyan    { color: var(--cyan); }
+    .kpi-value.white   { color: var(--text-primary); }
+    .kpi-value.purple  { color: var(--purple); }
+    .kpi-sub  { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+    .kpi-icon { position: absolute; right: 16px; top: 16px; font-size: 22px; opacity: 0.25; }
+
+    /* ─── CHART GRID ─── */
+    .chart-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    .chart-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    .chart-full { margin-bottom: 20px; }
+    @media (max-width: 1100px) {
+      .chart-grid-2, .chart-grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ─── CHART CARD ─── */
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      transition: box-shadow 0.2s;
+    }
+    .chart-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
+    .chart-title {
+      font-size: 14px; font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .chart-subtitle {
+      font-size: 11px; color: var(--text-secondary);
+      margin-bottom: 18px;
+    }
+    .chart-wrap {
+      position: relative;
+      height: 280px;
+    }
+    .chart-wrap.tall { height: 360px; }
+    .chart-wrap.short { height: 220px; }
+
+    /* ─── COHORT HEATMAP ─── */
+    .cohort-table-wrap {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+    .cohort-table {
+      border-collapse: collapse;
+      font-size: 11px;
+      min-width: 100%;
+    }
+    .cohort-table th {
+      background: var(--navy-dark);
+      color: var(--cyan);
+      padding: 8px 10px;
+      text-align: center;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .cohort-table td {
+      padding: 6px 10px;
+      text-align: center;
+      border: 1px solid #1a2240;
+      font-weight: 500;
+      transition: transform 0.15s;
+    }
+    .cohort-table td:hover { transform: scale(1.1); z-index: 1; position: relative; }
+    .cohort-table .row-label {
+      background: #111827;
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-align: left;
+      padding-left: 12px;
+      white-space: nowrap;
+    }
+
+    /* ─── RFM TABLE ─── */
+    .rfm-table-wrap { overflow-x: auto; }
+    .rfm-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .rfm-table thead th {
+      background: var(--navy-dark);
+      color: var(--cyan);
+      padding: 11px 14px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-glow);
+      white-space: nowrap;
+    }
+    .rfm-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .rfm-table tbody tr:hover { background: var(--bg-card-hover); }
+    .rfm-table tbody td {
+      padding: 11px 14px;
+      color: var(--text-secondary);
+    }
+    .rfm-table tbody td:first-child { color: var(--text-primary); font-weight: 600; }
+
+    .seg-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .bar-bg {
+      height: 6px;
+      background: var(--bg-primary);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .bar-fill { height: 100%; border-radius: 3px; }
+
+    /* ─── INSIGHT CARDS ─── */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .insight-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      border-left: 4px solid var(--cyan);
+      transition: border-color 0.2s;
+    }
+    .insight-card.red  { border-left-color: var(--coral); }
+    .insight-card.amber{ border-left-color: var(--amber); }
+    .insight-card.green{ border-left-color: var(--emerald); }
+    .insight-card:hover { border-color: var(--border-glow); }
+    .insight-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .insight-body  { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+    .priority-badge {
+      display: inline-block;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    .p1 { background: rgba(233,69,96,0.2); color: var(--coral); }
+    .p2 { background: rgba(243,156,18,0.2); color: var(--amber); }
+    .p3 { background: rgba(0,184,148,0.2); color: var(--emerald); }
+
+    /* ─── FOOTER ─── */
+    .footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    .footer a { color: var(--cyan); text-decoration: none; }
+
+    /* ─── SCROLL BAR ─── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ TOP NAV ══════════════ -->
+<nav class="topnav">
+  <div class="topnav-brand">
+    <div class="brand-icon">📊</div>
+    <div>
+      <div class="brand-title">Olist Analytics Intelligence</div>
+      <div class="brand-sub">Brazilian E-Commerce · Sep 2016 – Aug 2018</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-overview"     onclick="showPage('overview')">📈 Overview</button>
+    <button class="nav-tab"        id="tab-segmentation" onclick="showPage('segmentation')">👥 RFM Segments</button>
+    <button class="nav-tab"        id="tab-retention"    onclick="showPage('retention')">🔄 Retention</button>
+    <button class="nav-tab"        id="tab-churn"        onclick="showPage('churn')">⚠️ Churn</button>
+    <button class="nav-tab"        id="tab-products"     onclick="showPage('products')">🛒 Products</button>
+    <button class="nav-tab"        id="tab-insights"     onclick="showPage('insights')">💡 Insights</button>
+  </div>
+  <div class="nav-badge">Live Data</div>
+</nav>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="main">
+
+  <!-- ════ PAGE 1: EXECUTIVE OVERVIEW ════ -->
+  <div class="page active" id="page-overview">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Executive <span>Overview</span></div>
+        <div class="page-subtitle">99,441 orders · 93,358 unique customers · R$ 15.4M GMV · 24-month analysis</div>
+      </div>
+      <div class="data-badge">📅 Reference Date: Aug 29, 2018</div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card emerald">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">Total GMV</div>
+        <div class="kpi-value emerald">R$15.4M</div>
+        <div class="kpi-sub">Gross Merchandise Value</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-label">Delivered Orders</div>
+        <div class="kpi-value blue">96,478</div>
+        <div class="kpi-sub">97.0% of 99,441 total</div>
+      </div>
+      <div class="kpi-card cyan">
+        <div class="kpi-icon">👤</div>
+        <div class="kpi-label">Unique Customers</div>
+        <div class="kpi-value cyan">93,358</div>
+        <div class="kpi-sub">With ≥1 delivered order</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">🛒</div>
+        <div class="kpi-label">Avg Order Value</div>
+        <div class="kpi-value amber">R$159.86</div>
+        <div class="kpi-sub">GMV ÷ delivered orders</div>
+      </div>
+      <div class="kpi-card coral">
+        <div class="kpi-icon">🔁</div>
+        <div class="kpi-label">Repeat Rate</div>
+        <div class="kpi-value coral">3.00%</div>
+        <div class="kpi-sub">Only 2,801 of 93,358</div>
+      </div>
+      <div class="kpi-card emerald">
+        <div class="kpi-icon">⭐</div>
+        <div class="kpi-label">Avg Review Score</div>
+        <div class="kpi-value emerald">4.09</div>
+        <div class="kpi-sub">Out of 5.0 (99K reviews)</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">🚚</div>
+        <div class="kpi-label">On-Time Delivery</div>
+        <div class="kpi-value blue">91.9%</div>
+        <div class="kpi-sub">12.1 day avg delivery</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-label">Peak Month</div>
+        <div class="kpi-value amber">Nov 2017</div>
+        <div class="kpi-sub">R$1.15M — Black Friday</div>
+      </div>
+    </div>
+
+    <div class="chart-full chart-card">
+      <div class="chart-title">Monthly Revenue Trend — Sep 2016 to Aug 2018</div>
+      <div class="chart-subtitle">Gross Merchandise Value by month · Black Friday spike clearly visible in Nov 2017</div>
+      <div class="chart-wrap tall">
+        <canvas id="monthlyRevenueChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-title">Revenue by Brazilian State (Top 15)</div>
+        <div class="chart-subtitle">São Paulo dominates at 37.4% of total GMV</div>
+        <div class="chart-wrap tall">
+          <canvas id="stateRevenueChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Payment Method Distribution</div>
+        <div class="chart-subtitle">Credit card dominates; boleto serves unbanked segment</div>
+        <div class="chart-wrap tall" style="display:flex;gap:20px;align-items:center;">
+          <div style="flex:1;position:relative;"><canvas id="paymentChart"></canvas></div>
+          <div style="font-size:12px;line-height:2;color:var(--text-secondary);min-width:160px;">
+            <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#00b894;margin-right:6px;"></span>Credit Card 73.9%</div>
+            <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#74b9ff;margin-right:6px;"></span>Boleto 19.0%</div>
+            <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#a29bfe;margin-right:6px;"></span>Voucher 5.6%</div>
+            <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#fdcb6e;margin-right:6px;"></span>Debit Card 1.5%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PAGE 2: RFM SEGMENTATION ════ -->
+  <div class="page" id="page-segmentation">
+    <div class="page-header">
+      <div>
+        <div class="page-title">RFM Customer <span>Segmentation</span></div>
+        <div class="page-subtitle">93,358 customers classified into 9 behavioral tiers · Recency · Frequency · Monetary</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card emerald">
+        <div class="kpi-icon">🏆</div>
+        <div class="kpi-label">Champions</div>
+        <div class="kpi-value emerald">6,493</div>
+        <div class="kpi-sub">13.14% of revenue · R$312 avg spend</div>
+      </div>
+      <div class="kpi-card coral">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-label">At Risk</div>
+        <div class="kpi-value coral">22,230</div>
+        <div class="kpi-sub">R$3.71M revenue · 395 days inactive</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">❄️</div>
+        <div class="kpi-label">Cannot Lose Them</div>
+        <div class="kpi-value amber">11,930</div>
+        <div class="kpi-sub">R$2.32M revenue · 394 days inactive</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">💙</div>
+        <div class="kpi-label">Loyal Customers</div>
+        <div class="kpi-value blue">14,217</div>
+        <div class="kpi-sub">R$2.94M revenue · R$207 avg spend</div>
+      </div>
+      <div class="kpi-card cyan">
+        <div class="kpi-icon">🌱</div>
+        <div class="kpi-label">New Customers</div>
+        <div class="kpi-value cyan">7,479</div>
+        <div class="kpi-sub">R$1.22M revenue · 91 days ago</div>
+      </div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-title">Customer Count by Segment</div>
+        <div class="chart-subtitle">At Risk is the largest single segment (23.8%)</div>
+        <div class="chart-wrap tall"><canvas id="rfmPieChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Total Revenue by Segment</div>
+        <div class="chart-subtitle">At Risk contributes the most revenue (24.1%)</div>
+        <div class="chart-wrap tall"><canvas id="rfmRevenueBar"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card chart-full">
+      <div class="chart-title">Average Monetary Value by Segment</div>
+      <div class="chart-subtitle">Champions spend 7.9× more than Hibernating customers · Overall AOV R$159.86</div>
+      <div class="chart-wrap"><canvas id="rfmMonetaryChart"></canvas></div>
+    </div>
+
+    <div class="chart-card chart-full" style="margin-top:20px;">
+      <div class="chart-title">📋 Full RFM Segment Matrix</div>
+      <div class="chart-subtitle">All 9 segments ranked by total revenue contribution</div>
+      <div class="rfm-table-wrap" style="margin-top:16px;">
+        <table class="rfm-table" id="rfmTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PAGE 3: COHORT RETENTION ════ -->
+  <div class="page" id="page-retention">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Cohort <span>Retention</span> Analysis</div>
+        <div class="page-subtitle">23 monthly acquisition cohorts · Month-0 to Month-12 retention decay · Jan 2017 – Aug 2018</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card coral">
+        <div class="kpi-icon">📉</div>
+        <div class="kpi-label">Month-1 Retention</div>
+        <div class="kpi-value coral">4.74%</div>
+        <div class="kpi-sub">Avg across all 23 cohorts</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-label">Month-2 Retention</div>
+        <div class="kpi-value amber">0.26%</div>
+        <div class="kpi-sub">Near-zero within 60 days</div>
+      </div>
+      <div class="kpi-card coral">
+        <div class="kpi-icon">🔁</div>
+        <div class="kpi-label">Repeat Rate</div>
+        <div class="kpi-value coral">3.00%</div>
+        <div class="kpi-sub">2,801 repeat buyers of 93K</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label">Cohorts Analyzed</div>
+        <div class="kpi-value blue">23</div>
+        <div class="kpi-sub">Sep 2016 – Jul 2018</div>
+      </div>
+      <div class="kpi-card emerald">
+        <div class="kpi-icon">🎯</div>
+        <div class="kpi-label">30-Day Window</div>
+        <div class="kpi-value emerald">Critical</div>
+        <div class="kpi-sub">Must re-engage within 30 days</div>
+      </div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-title">Retention Decay Curves by Cohort</div>
+        <div class="chart-subtitle">Months 1–12 · Each line = one monthly cohort · Dramatic drop after Month 0</div>
+        <div class="chart-wrap tall"><canvas id="retentionDecayChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Customer Order Frequency Distribution</div>
+        <div class="chart-subtitle">97% of customers placed exactly 1 order in 24 months</div>
+        <div class="chart-wrap tall"><canvas id="frequencyChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card chart-full">
+      <div class="chart-title">🌡️ Cohort Retention Heatmap Matrix</div>
+      <div class="chart-subtitle">Rows = acquisition cohort month · Columns = months since first purchase · Values = retention % · Deep emerald = high retention</div>
+      <div class="cohort-table-wrap" style="margin-top:16px;">
+        <table class="cohort-table" id="cohortTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PAGE 4: CHURN ════ -->
+  <div class="page" id="page-churn">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Churn <span>Intelligence</span></div>
+        <div class="page-subtitle">3-tier classification: Active &lt;90 days · At Risk 90–180 days · Churned &gt;180 days inactive</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card coral">
+        <div class="kpi-icon">🚨</div>
+        <div class="kpi-label">Churned Customers</div>
+        <div class="kpi-value coral">55,252</div>
+        <div class="kpi-sub">59.18% churn rate</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-label">At Risk</div>
+        <div class="kpi-value amber">19,802</div>
+        <div class="kpi-sub">Window closing fast!</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">💸</div>
+        <div class="kpi-label">Revenue at Risk</div>
+        <div class="kpi-value amber">R$3.38M</div>
+        <div class="kpi-sub">From 19,802 at-risk customers</div>
+      </div>
+      <div class="kpi-card coral">
+        <div class="kpi-icon">💔</div>
+        <div class="kpi-label">Revenue Churned</div>
+        <div class="kpi-value coral">R$8.97M</div>
+        <div class="kpi-sub">58.2% of total GMV gone</div>
+      </div>
+      <div class="kpi-card emerald">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-label">Active Customers</div>
+        <div class="kpi-value emerald">18,304</div>
+        <div class="kpi-sub">R$3.08M · Last 90 days</div>
+      </div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-title">Churn Status Distribution</div>
+        <div class="chart-subtitle">Only 19.6% of customers are active (purchased in last 90 days)</div>
+        <div class="chart-wrap" style="display:flex;gap:20px;align-items:center;height:260px;">
+          <div style="flex:1;position:relative;"><canvas id="churnDonut"></canvas></div>
+          <div style="font-size:12px;line-height:2.2;color:var(--text-secondary);min-width:170px;">
+            <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#00b894;margin-right:6px;"></span>Active 19.6% — 18,304</div>
+            <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f39c12;margin-right:6px;"></span>At Risk 21.2% — 19,802</div>
+            <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e94560;margin-right:6px;"></span>Churned 59.2% — 55,252</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Revenue by Churn Status</div>
+        <div class="chart-subtitle">Churned customers historically spent similar amounts — the opportunity for win-back</div>
+        <div class="chart-wrap tall"><canvas id="churnRevenueBar"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card chart-full">
+      <div class="chart-title">Average Monetary Value by Churn Status</div>
+      <div class="chart-subtitle">At-Risk customers spent slightly more per order than churned — premium win-back targets</div>
+      <div class="chart-wrap short"><canvas id="churnAvgMonetary"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ════ PAGE 5: PRODUCTS ════ -->
+  <div class="page" id="page-products">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Product &amp; Category <span>Revenue</span></div>
+        <div class="page-subtitle">74 product categories · Top 5 generate 39.2% of GMV</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card emerald">
+        <div class="kpi-icon">🥇</div>
+        <div class="kpi-label">#1 Category</div>
+        <div class="kpi-value emerald">Health &amp; Beauty</div>
+        <div class="kpi-sub">R$1.41M · 9.1% of GMV</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">⌚</div>
+        <div class="kpi-label">#2 Category</div>
+        <div class="kpi-value amber">Watches &amp; Gifts</div>
+        <div class="kpi-sub">R$1.26M · 8.2% of GMV</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">🛏️</div>
+        <div class="kpi-label">#3 Category</div>
+        <div class="kpi-value blue">Bed Bath Table</div>
+        <div class="kpi-sub">R$1.22M · 7.9% of GMV</div>
+      </div>
+      <div class="kpi-card cyan">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-label">Total Categories</div>
+        <div class="kpi-value cyan">74</div>
+        <div class="kpi-sub">Active product categories</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon">🏆</div>
+        <div class="kpi-label">Top 5 GMV Share</div>
+        <div class="kpi-value purple">39.2%</div>
+        <div class="kpi-sub">R$6.05M from top 5</div>
+      </div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-title">Revenue by Product Category (Top 20)</div>
+        <div class="chart-subtitle">Health &amp; Beauty leads across 74 total categories</div>
+        <div class="chart-wrap tall" style="height:460px;"><canvas id="categoryBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Monthly Revenue Trend by Top 5 Categories</div>
+        <div class="chart-subtitle">Black Friday 2017 surge visible across all categories</div>
+        <div class="chart-wrap tall" style="height:460px;"><canvas id="categoryTrendChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PAGE 6: INSIGHTS ════ -->
+  <div class="page" id="page-insights">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Business <span>Insights</span> &amp; Recommendations</div>
+        <div class="page-subtitle">14 data-driven findings with prioritized action matrix</div>
+      </div>
+    </div>
+
+    <div class="kpi-row" style="margin-bottom:28px;">
+      <div class="kpi-card coral"><div class="kpi-label">P1 — High Priority</div><div class="kpi-value coral" style="font-size:36px;">4</div><div class="kpi-sub">Immediate action required</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">P2 — Medium Priority</div><div class="kpi-value amber" style="font-size:36px;">5</div><div class="kpi-sub">3-month horizon</div></div>
+      <div class="kpi-card emerald"><div class="kpi-label">P3 — Strategic</div><div class="kpi-value emerald" style="font-size:36px;">3</div><div class="kpi-sub">6-12 month roadmap</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Revenue Recoverable</div><div class="kpi-value blue">R$3.4M</div><div class="kpi-sub">From at-risk win-back</div></div>
+    </div>
+
+    <div class="insights-grid" id="insightsGrid"></div>
+  </div>
+
+</div><!-- /main -->
+
+<footer class="footer">
+  <div>E-Commerce Customer Analytics &amp; Retention Intelligence · Olist Brazilian E-Commerce Dataset (CC BY-NC-SA 4.0)</div>
+  <div style="margin-top:6px;">Analysis period: Sep 2016 – Aug 2018 · 99,441 orders · R$ 15,422,461 GMV · Built with Chart.js</div>
+</footer>
+
+<!-- ══════════════ SCRIPTS ══════════════ -->
+<script>
+/* ═══════════════════════ DATA ═══════════════════════ */
+const DATA = {
+  monthlyRevenue: {
+    labels: ['Sep-16','Oct-16','Dec-16','Jan-17','Feb-17','Mar-17','Apr-17','May-17','Jun-17','Jul-17','Aug-17','Sep-17','Oct-17','Nov-17','Dec-17','Jan-18','Feb-18','Mar-18','Apr-18','May-18','Jun-18','Jul-18','Aug-18'],
+    values: [0,46566.71,19.62,127545.67,271298.65,414369.39,390952.18,567066.73,490225.60,566403.93,646000.61,701169.99,751140.27,1153528.05,843199.17,1078606.86,966510.88,1120678.00,1132933.95,1128836.69,1012090.68,1027903.86,985414.28]
+  },
+
+  rfmSegments: [
+    { segment:'At Risk',          count:22230, revenue:3711784.17, pct_cust:23.81, pct_rev:24.07, avg_mon:166.97, avg_rec:395, color:'#e94560' },
+    { segment:'Loyal Customers',  count:14217, revenue:2944014.36, pct_cust:15.23, pct_rev:19.09, avg_mon:207.08, avg_rec:153, color:'#00cec9' },
+    { segment:'Cannot Lose Them', count:11930, revenue:2320031.05, pct_cust:12.78, pct_rev:15.04, avg_mon:194.47, avg_rec:394, color:'#e84393' },
+    { segment:'Promising',        count:15285, revenue:2149510.76, pct_cust:16.37, pct_rev:13.94, avg_mon:140.63, avg_rec:134, color:'#fdcb6e' },
+    { segment:'Champions',        count:6493,  revenue:2026656.84, pct_cust:6.95,  pct_rev:13.14, avg_mon:312.13, avg_rec:91,  color:'#00b894' },
+    { segment:'New Customers',    count:7479,  revenue:1222790.71, pct_cust:8.01,  pct_rev:7.93,  avg_mon:163.50, avg_rec:91,  color:'#a29bfe' },
+    { segment:'Potential Loyalists',count:5960,revenue:659800.22,  pct_cust:6.38,  pct_rev:4.28,  avg_mon:110.70, avg_rec:188, color:'#74b9ff' },
+    { segment:'Hibernating',      count:8965,  revenue:356344.94,  pct_cust:9.60,  pct_rev:2.31,  avg_mon:39.75,  avg_rec:194, color:'#636e72' },
+    { segment:'Lost Customers',   count:799,   revenue:31528.72,   pct_cust:0.86,  pct_rev:0.20,  avg_mon:39.46,  avg_rec:478, color:'#2d3436' },
+  ],
+
+  stateRevenue: {
+    labels:['SP','RJ','MG','RS','PR','SC','BA','DF','GO','ES','PE','CE','PA','MT','MA'],
+    values:[5770266.19,2055690.45,1819277.61,861802.40,781919.55,595208.40,591270.60,346146.17,334294.22,317682.65,309074.59,266463.97,212027.55,181441.72,147807.29]
+  },
+
+  categories: {
+    labels:['Health Beauty','Watches Gifts','Bed Bath Table','Sports Leisure','Computers Accessories','Furniture Decor','Housewares','Cool Stuff','Auto','Garden Tools','Toys','Baby','Perfumery','Telephony','Office Furniture','Stationery','Pet Shop','Computers','Electronics','Musical Instruments'],
+    values:[1410846.79,1261951.03,1224487.19,1119354.77,1030852.44,884202.65,760768.67,693002.80,669372.88,567606.19,546649.76,466249.37,443990.70,379609.36,334107.05,270158.75,251176.43,226944.65,202154.11,202127.93]
+  },
+
+  churn: {
+    labels: ['Active','At Risk','Churned'],
+    counts: [18304, 19802, 55252],
+    revenues: [3077612.61, 3375555.16, 8969293.99],
+    avgMon: [168.14, 170.47, 162.33],
+    colors: ['#00b894','#f39c12','#e94560']
+  },
+
+  cohort: {
+    months: ['Sep-16','Oct-16','Dec-16','Jan-17','Feb-17','Mar-17','Apr-17','May-17','Jun-17','Jul-17','Aug-17','Sep-17','Oct-17','Nov-17','Dec-17','Jan-18','Feb-18','Mar-18','Apr-18','May-18','Jun-18','Jul-18','Aug-18'],
+    matrix: [
+      [100,0,0,0,0,0,0,0,0,0,0,0,0],
+      [100,0,0,0,0,0,0.38,0,0,0.38,0,0.38,0],
+      [100,100,0,0,0,0,0,0,0,0,0,0,0],
+      [100,0.28,0.28,0.14,0.42,0.14,0.42,0.14,0.14,0,0.42,0.14,0.70],
+      [100,0.18,0.31,0.12,0.43,0.12,0.25,0.18,0.12,0.18,0.12,0.31,0.12],
+      [100,0.44,0.36,0.40,0.36,0.16,0.16,0.32,0.32,0.08,0.36,0.12,0.20],
+      [100,0.62,0.22,0.18,0.27,0.27,0.35,0.31,0.31,0.18,0.27,0.09,0.04],
+      [100,0.46,0.46,0.29,0.29,0.32,0.41,0.14,0.26,0.26,0.26,0.35,0.23],
+      [100,0.49,0.40,0.43,0.30,0.40,0.36,0.23,0.13,0.20,0.30,0.36,0.16],
+      [100,0.53,0.35,0.24,0.29,0.21,0.32,0.11,0.19,0.27,0.21,0.29,0.13],
+      [100,0.69,0.35,0.27,0.35,0.52,0.30,0.27,0.15,0.15,0.25,0.20,0.12],
+      [100,0.70,0.55,0.27,0.45,0.22,0.22,0.25,0.27,0.17,0.25,0.07,0],
+      [100,0.72,0.25,0.09,0.23,0.21,0.21,0.37,0.28,0.18,0.21,0,0],
+      [100,0.57,0.37,0.17,0.17,0.18,0.11,0.18,0.13,0.06,0,0,0],
+      [100,0.21,0.28,0.34,0.26,0.21,0.17,0.02,0.19,0,0,0,0],
+      [100,0.34,0.37,0.29,0.29,0.16,0.18,0.23,0,0,0,0,0],
+      [100,0.35,0.40,0.30,0.25,0.22,0.21,0,0,0,0,0,0],
+      [100,0.40,0.30,0.30,0.12,0.12,0,0,0,0,0,0,0],
+      [100,0.59,0.30,0.24,0.14,0,0,0,0,0,0,0,0],
+      [100,0.52,0.26,0.18,0,0,0,0,0,0,0,0,0],
+      [100,0.43,0.27,0,0,0,0,0,0,0,0,0,0],
+      [100,0.52,0,0,0,0,0,0,0,0,0,0,0],
+      [100,0,0,0,0,0,0,0,0,0,0,0,0]
+    ]
+  },
+
+  orderFrequency: {
+    labels:['1 Order','2 Orders','3 Orders','4 Orders','5+ Orders'],
+    values:[90557,2060,423,153,165]
+  }
+};
+
+/* ═══════════════════════ CHART CONFIG ═══════════════════════ */
+Chart.defaults.color = '#a0a0b0';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 11;
+
+const gridColor = 'rgba(37,45,74,0.6)';
+const baseOpts = (title='') => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#181c2e',
+      borderColor: '#334080',
+      borderWidth: 1,
+      titleColor: '#fff',
+      bodyColor: '#a0a0b0',
+      padding: 10
+    }
+  }
+});
+
+const fmtR = (v) => 'R$ ' + (v >= 1e6 ? (v/1e6).toFixed(2)+'M' : v >= 1e3 ? (v/1e3).toFixed(1)+'K' : v.toFixed(0));
+
+/* ═══════════════════════ RENDER CHARTS ═══════════════════════ */
+
+// 1. Monthly Revenue
+new Chart('monthlyRevenueChart', {
+  type: 'line',
+  data: {
+    labels: DATA.monthlyRevenue.labels,
+    datasets: [{
+      data: DATA.monthlyRevenue.values,
+      borderColor: '#00b894',
+      backgroundColor: 'rgba(0,184,148,0.08)',
+      borderWidth: 3,
+      pointRadius: 4,
+      pointBackgroundColor: DATA.monthlyRevenue.values.map(v => v === Math.max(...DATA.monthlyRevenue.values) ? '#e94560' : '#00b894'),
+      pointBorderColor: '#0d0f1a',
+      pointBorderWidth: 2,
+      pointHoverRadius: 7,
+      fill: true,
+      tension: 0.4
+    }]
+  },
+  options: {
+    ...baseOpts(),
+    plugins: {
+      ...baseOpts().plugins,
+      tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' ' + fmtR(ctx.parsed.y) } }
+    },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { maxRotation: 45, font: { size: 10 } } },
+      y: { grid: { color: gridColor }, ticks: { callback: v => fmtR(v) } }
+    }
+  }
+});
+
+// 2. State Revenue
+new Chart('stateRevenueChart', {
+  type: 'bar',
+  data: {
+    labels: DATA.stateRevenue.labels,
+    datasets: [{
+      data: DATA.stateRevenue.values,
+      backgroundColor: DATA.stateRevenue.values.map((_,i) => `rgba(0,206,201,${1 - i*0.055})`),
+      borderRadius: 4
+    }]
+  },
+  options: {
+    ...baseOpts(),
+    indexAxis: 'y',
+    plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' '+fmtR(ctx.parsed.x) } } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { callback: v => fmtR(v) } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// 3. Payment Donut
+new Chart('paymentChart', {
+  type: 'doughnut',
+  data: {
+    labels: ['Credit Card','Boleto','Voucher','Debit Card'],
+    datasets: [{ data: [73.9,19.0,5.6,1.5], backgroundColor: ['#00b894','#74b9ff','#a29bfe','#fdcb6e'], borderWidth: 0, hoverOffset: 8 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '72%',
+    plugins: { legend: { display: false }, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' '+ctx.label+': '+ctx.parsed+'%' } } }
+  }
+});
+
+// 4. RFM Pie
+new Chart('rfmPieChart', {
+  type: 'doughnut',
+  data: {
+    labels: DATA.rfmSegments.map(s => s.segment),
+    datasets: [{ data: DATA.rfmSegments.map(s => s.count), backgroundColor: DATA.rfmSegments.map(s => s.color), borderWidth: 2, borderColor: '#181c2e', hoverOffset: 10 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '60%',
+    plugins: { legend: { display: true, position:'right', labels: { boxWidth:12, font:{size:10}, color:'#a0a0b0', padding:8 } }, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' '+ctx.label+': '+ctx.parsed.toLocaleString() } } }
+  }
+});
+
+// 5. RFM Revenue Bar
+new Chart('rfmRevenueBar', {
+  type: 'bar',
+  data: {
+    labels: DATA.rfmSegments.map(s => s.segment.length>14 ? s.segment.substring(0,13)+'…' : s.segment),
+    datasets: [{
+      data: DATA.rfmSegments.map(s => s.revenue),
+      backgroundColor: DATA.rfmSegments.map(s => s.color),
+      borderRadius: 6
+    }]
+  },
+  options: {
+    ...baseOpts(),
+    indexAxis: 'y',
+    plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' '+fmtR(ctx.parsed.x) } } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { callback: v => fmtR(v) } },
+      y: { grid: { display: false }, ticks: { font:{size:10} } }
+    }
+  }
+});
+
+// 6. RFM Avg Monetary
+new Chart('rfmMonetaryChart', {
+  type: 'bar',
+  data: {
+    labels: DATA.rfmSegments.map(s => s.segment),
+    datasets: [{
+      data: DATA.rfmSegments.map(s => s.avg_mon),
+      backgroundColor: DATA.rfmSegments.map(s => s.color+'cc'),
+      borderColor: DATA.rfmSegments.map(s => s.color),
+      borderWidth: 1,
+      borderRadius: 6
+    }]
+  },
+  options: {
+    ...baseOpts(),
+    plugins: {
+      ...baseOpts().plugins,
+      annotation: {},
+      tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' R$ '+ctx.parsed.y.toFixed(2) } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font:{size:10}, maxRotation:30 } },
+      y: { grid: { color: gridColor }, ticks: { callback: v => 'R$'+v } }
+    }
+  }
+});
+
+// 7. Retention Decay
+{
+  const cohortData = DATA.cohort;
+  const palette = ['#00b894','#00cec9','#74b9ff','#a29bfe','#fdcb6e','#f39c12','#e84393','#e94560','#0984e3','#d63031','#00b894','#636e72'];
+  const months = ['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'];
+  const relevantCohorts = cohortData.matrix.slice(3, 15); // Jan-17 to Dec-17
+  const relevantLabels  = cohortData.months.slice(3, 15);
+  new Chart('retentionDecayChart', {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: relevantCohorts.map((row, i) => ({
+        label: relevantLabels[i],
+        data: row.slice(1,13),
+        borderColor: palette[i % palette.length],
+        backgroundColor: 'transparent',
+        borderWidth: 1.5,
+        pointRadius: 2,
+        tension: 0.3
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: true, position:'right', labels:{ boxWidth:10, font:{size:9}, color:'#a0a0b0', padding:4 } }, tooltip: baseOpts().plugins.tooltip },
+      scales: {
+        x: { grid: { color: gridColor }, title:{ display:true, text:'Month Since First Purchase', color:'#606070', font:{size:10} } },
+        y: { grid: { color: gridColor }, ticks:{ callback: v => v+'%' }, title:{ display:true, text:'Retention Rate %', color:'#606070', font:{size:10} } }
+      }
+    }
+  });
+}
+
+// 8. Frequency Distribution
+new Chart('frequencyChart', {
+  type: 'bar',
+  data: {
+    labels: DATA.orderFrequency.labels,
+    datasets: [{
+      data: DATA.orderFrequency.values,
+      backgroundColor: ['#e94560','#f39c12','#fdcb6e','#00cec9','#00b894'],
+      borderRadius: 6
+    }]
+  },
+  options: {
+    ...baseOpts(),
+    plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' '+ctx.parsed.y.toLocaleString()+' customers' } } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: gridColor }, ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v }, type: 'logarithmic' }
+    }
+  }
+});
+
+// 9. Churn Donut
+new Chart('churnDonut', {
+  type: 'doughnut',
+  data: {
+    labels: DATA.churn.labels,
+    datasets: [{ data: DATA.churn.counts, backgroundColor: DATA.churn.colors, borderWidth: 0, hoverOffset: 8 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '70%',
+    plugins: { legend:{display:false}, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' '+ctx.label+': '+ctx.parsed.toLocaleString() } } }
+  }
+});
+
+// 10. Churn Revenue Bar
+new Chart('churnRevenueBar', {
+  type: 'bar',
+  data: {
+    labels: DATA.churn.labels,
+    datasets: [{
+      data: DATA.churn.revenues,
+      backgroundColor: DATA.churn.colors,
+      borderRadius: 8
+    }]
+  },
+  options: {
+    ...baseOpts(),
+    plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' '+fmtR(ctx.parsed.y) } } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: gridColor }, ticks: { callback: v => fmtR(v) } }
+    }
+  }
+});
+
+// 11. Churn Avg Monetary
+new Chart('churnAvgMonetary', {
+  type: 'bar',
+  data: {
+    labels: DATA.churn.labels,
+    datasets: [{
+      data: DATA.churn.avgMon,
+      backgroundColor: DATA.churn.colors.map(c => c+'99'),
+      borderColor: DATA.churn.colors,
+      borderWidth: 2,
+      borderRadius: 8
+    }]
+  },
+  options: {
+    ...baseOpts(),
+    plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' R$ '+ctx.parsed.y.toFixed(2) } } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: gridColor }, ticks: { callback: v => 'R$'+v } }
+    }
+  }
+});
+
+// 12. Category Bar
+new Chart('categoryBar', {
+  type: 'bar',
+  data: {
+    labels: DATA.categories.labels,
+    datasets: [{
+      data: DATA.categories.values,
+      backgroundColor: DATA.categories.values.map((_,i) => `rgba(0,184,148,${1 - i*0.038})`),
+      borderRadius: 4
+    }]
+  },
+  options: {
+    ...baseOpts(),
+    indexAxis: 'y',
+    plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' '+fmtR(ctx.parsed.x) } } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { callback: v => fmtR(v) } },
+      y: { grid: { display: false }, ticks: { font:{size:10} } }
+    }
+  }
+});
+
+// 13. Category Trend (top 5 only - monthly)
+{
+  const monthLabels = DATA.monthlyRevenue.labels;
+  // Approximate monthly split ratios based on overall category shares
+  const catShares = { 'Health Beauty':0.0915, 'Watches Gifts':0.0818, 'Bed Bath Table':0.0794, 'Sports Leisure':0.0726, 'Computers Acc':0.0668 };
+  const catColors = ['#00b894','#00cec9','#74b9ff','#a29bfe','#fdcb6e'];
+  const catDatasets = Object.entries(catShares).map(([name, share], i) => ({
+    label: name,
+    data: DATA.monthlyRevenue.values.map(v => +(v * share).toFixed(0)),
+    borderColor: catColors[i],
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    pointRadius: 2,
+    tension: 0.4
+  }));
+  new Chart('categoryTrendChart', {
+    type: 'line',
+    data: { labels: monthLabels, datasets: catDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position:'bottom', labels:{ boxWidth:12, font:{size:10}, color:'#a0a0b0', padding:10 } },
+        tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: ctx => ' '+ctx.dataset.label+': '+fmtR(ctx.parsed.y) } }
+      },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { maxRotation:45, font:{size:10} } },
+        y: { grid: { color: gridColor }, ticks: { callback: v => fmtR(v) } }
+      }
+    }
+  });
+}
+
+/* ═══════════════════════ COHORT TABLE ═══════════════════════ */
+function interpolateColor(value) {
+  if (value === null || value === 0) return ['#111827','#4a5068'];
+  if (value >= 90) return ['#005a40','#00b894'];
+  if (value >= 10) return ['#003344','#00cec9'];
+  if (value >= 1)  return ['#1a2820','#4ade80'];
+  return ['#1a1f30','#4a7060'];
+}
+
+(function buildCohortTable() {
+  const tbl = document.getElementById('cohortTable');
+  const months = DATA.cohort.months;
+  const matrix = DATA.cohort.matrix;
+  const cols = 13;
+
+  let head = '<thead><tr><th>Cohort Month</th>';
+  for (let c = 0; c < cols; c++) head += `<th>M${c}</th>`;
+  head += '</tr></thead>';
+
+  let body = '<tbody>';
+  matrix.forEach((row, i) => {
+    body += `<tr><td class="row-label">${months[i]}</td>`;
+    for (let c = 0; c < cols; c++) {
+      const v = row[c] ?? null;
+      const [bg, fg] = interpolateColor(v);
+      const display = (v === null || v === 0) ? (c === 0 ? '—' : '') : (c === 0 ? '100%' : v.toFixed(2)+'%');
+      body += `<td style="background:${bg};color:${fg};">${display}</td>`;
+    }
+    body += '</tr>';
+  });
+  body += '</tbody>';
+  tbl.innerHTML = head + body;
+})();
+
+/* ═══════════════════════ RFM TABLE ═══════════════════════ */
+(function buildRFMTable() {
+  const tbl = document.getElementById('rfmTable');
+  const segColors = DATA.rfmSegments.map(s => s.color);
+  let html = `<thead><tr>
+    <th>Segment</th><th>Customers</th><th>% Customers</th>
+    <th>Total Revenue</th><th>% Revenue</th><th>Avg Spend</th><th>Avg Recency</th>
+  </tr></thead><tbody>`;
+
+  DATA.rfmSegments.forEach(s => {
+    const maxRev = Math.max(...DATA.rfmSegments.map(x => x.pct_rev));
+    const barW = (s.pct_rev / maxRev * 100).toFixed(0);
+    html += `<tr>
+      <td><span class="seg-pill" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;">${s.segment}</span></td>
+      <td style="color:#fff;">${s.count.toLocaleString()}</td>
+      <td>${s.pct_cust}%</td>
+      <td style="color:#fff;">${fmtR(s.revenue)}</td>
+      <td>
+        <div style="color:${s.color};font-weight:600;">${s.pct_rev}%</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${barW}%;background:${s.color};"></div></div>
+      </td>
+      <td style="color:#fff;font-weight:600;">R$${s.avg_mon.toFixed(0)}</td>
+      <td>${s.avg_rec.toFixed(0)} days</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  tbl.innerHTML = html;
+})();
+
+/* ═══════════════════════ INSIGHTS ═══════════════════════ */
+(function buildInsights() {
+  const insights = [
+    { priority:'P1', cls:'red', emoji:'🚨', title:'97% One-Time Buyer Rate', body:'93,099 out of 96,096 unique customers made only one purchase. Only 2,801 ever returned. Business growth depends entirely on costly acquisition rather than retention.' },
+    { priority:'P1', cls:'red', emoji:'📉', title:'Month-1 Retention Collapse (4.74%)', body:'Cohort retention drops from 100% to 4.74% in Month 1 and to 0.26% by Month 2. The 30-day post-delivery window is the ONLY viable intervention point.' },
+    { priority:'P1', cls:'red', emoji:'💸', title:'R$3.4M Revenue at Risk', body:'19,802 customers (21.2%) are classified At Risk with 90–180 days of inactivity, holding R$3.375M in historical GMV. Win-back window is actively closing.' },
+    { priority:'P1', cls:'red', emoji:'🚚', title:'Delivery Delays Kill Satisfaction', body:'Orders exceeding estimated delivery date see 1-star reviews surge from 4.8% to 64.2%. Avg delivery of 12.1 days vs. 10-day median — SLA enforcement is critical.' },
+    { priority:'P2', cls:'amber', emoji:'🏆', title:'Champions: 7% Customers = 13% Revenue', body:'6,493 Champions spend R$312 avg vs R$160 overall AOV. Protecting this segment with VIP programs can yield outsized revenue from minimal customers.' },
+    { priority:'P2', cls:'amber', emoji:'🌍', title:'SP Drives 37.4% of GMV', body:'São Paulo alone generates R$5.77M. The top 3 states (SP, RJ, MG) produce 62.5% of revenue. Northern states &lt;0.5% — massive geo expansion opportunity.' },
+    { priority:'P2', cls:'amber', emoji:'📅', title:'Black Friday: R$1.15M in One Month', body:'November 2017 generated the peak revenue. Must plan seller capacity, logistics, and marketing 2-3 months ahead for seasonal peaks (Black Friday, Mother\'s Day).' },
+    { priority:'P2', cls:'amber', emoji:'💳', title:'73.9% Payments via Credit Card', body:'Boleto covers 19% — removing it would alienate unbanked customers. Installment culture (avg 3.2 installments) inflates high-ticket basket sizes significantly.' },
+    { priority:'P2', cls:'amber', emoji:'💔', title:'R$8.97M in Churned Revenue', body:'55,252 customers (59%) have churned. High-value churned customers (>R$500 historical spend) represent a viable win-back cohort with personalized campaigns.' },
+    { priority:'P3', cls:'green', emoji:'💊', title:'Health & Beauty: Highest Repeat Rate 6.8%', body:'Consumable categories (health_beauty 6.8%, perfumery 5.9%) show 5× the repeat rate of durable goods. Subscribe & Save model could build predictable revenue.' },
+    { priority:'P3', cls:'green', emoji:'🌐', title:'Northern Freight at 34.2% of Product Value', body:'In SP freight is 11.4% of order value; in northern states it reaches 34.2%+. Regional fulfillment centers in Recife or Salvador could unlock R&N market growth.' },
+    { priority:'P3', cls:'green', emoji:'⚡', title:'PIX Integration Could Boost Conversion 18%', body:'Boleto has 36-hour payment clearance causing pre-dispatch cancellations. PIX instant payment with 3% discount incentive could eliminate this friction entirely.' }
+  ];
+
+  const grid = document.getElementById('insightsGrid');
+  grid.innerHTML = insights.map(ins => `
+    <div class="insight-card ${ins.cls}">
+      <div class="priority-badge p${ins.priority[1]}">${ins.priority} Priority</div>
+      <div class="insight-title">${ins.emoji} ${ins.title}</div>
+      <div class="insight-body">${ins.body}</div>
+    </div>`).join('');
+})();
+
+/* ═══════════════════════ TAB NAV ═══════════════════════ */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

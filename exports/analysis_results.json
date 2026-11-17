@@ -1,0 +1,128 @@
+{
+  "total_raw_orders": 99441,
+  "total_customers_registered": 96096,
+  "total_delivered_orders": 96478,
+  "cancelled_orders": 625,
+  "master_rows": 96478,
+  "total_revenue": 15422461.77,
+  "avg_order_value": 159.86,
+  "avg_delivery_days": 12.1,
+  "on_time_rate": 91.9,
+  "total_unique_customers": 93358,
+  "repeat_customers": 2801,
+  "repeat_customer_rate": 3.0,
+  "one_time_customer_pct": 97.0,
+  "rfm_segment_summary": {
+    "customer_count": {
+      "At Risk": 22230,
+      "Loyal Customers": 14217,
+      "Cannot Lose Them": 11930,
+      "Promising": 15285,
+      "Champions": 6493,
+      "New Customers": 7479,
+      "Potential Loyalists": 5960,
+      "Hibernating": 8965,
+      "Lost Customers": 799
+    },
+    "avg_recency": {
+      "At Risk": 394.66221322537115,
+      "Loyal Customers": 153.23085039037773,
+      "Cannot Lose Them": 394.2651299245599,
+      "Promising": 133.633627739614,
+      "Champions": 91.11181272139227,
+      "New Customers": 91.18652226233453,
+      "Potential Loyalists": 187.79026845637583,
+      "Hibernating": 194.23881762409368,
+      "Lost Customers": 477.6182728410513
+    },
+    "avg_frequency": {
+      "At Risk": 1.0479982006297797,
+      "Loyal Customers": 1.0549342336639236,
+      "Cannot Lose Them": 1.0,
+      "Promising": 1.005561007523716,
+      "Champions": 1.1803480671492377,
+      "New Customers": 1.0,
+      "Potential Loyalists": 1.0,
+      "Hibernating": 1.0017847183491355,
+      "Lost Customers": 1.0
+    },
+    "avg_monetary": {
+      "At Risk": 166.97184750337183,
+      "Loyal Customers": 207.07704579025003,
+      "Cannot Lose Them": 194.4703310980724,
+      "Promising": 140.6287706902183,
+      "Champions": 312.12949946095785,
+      "New Customers": 163.49655167803104,
+      "Potential Loyalists": 110.70473489932877,
+      "Hibernating": 39.74845956497505,
+      "Lost Customers": 39.46022528160196
+    },
+    "total_revenue": {
+      "At Risk": 3711784.169999956,
+      "Loyal Customers": 2944014.3599999845,
+      "Cannot Lose Them": 2320031.0500000035,
+      "Promising": 2149510.7599999867,
+      "Champions": 2026656.8399999992,
+      "New Customers": 1222790.7099999941,
+      "Potential Loyalists": 659800.2199999995,
+      "Hibernating": 356344.94000000134,
+      "Lost Customers": 31528.71999999996
+    },
+    "pct_customers": {
+      "At Risk": 23.81,
+      "Loyal Customers": 15.23,
+      "Cannot Lose Them": 12.78,
+      "Promising": 16.37,
+      "Champions": 6.95,
+      "New Customers": 8.01,
+      "Potential Loyalists": 6.38,
+      "Hibernating": 9.6,
+      "Lost Customers": 0.86
+    },
+    "pct_revenue": {
+      "At Risk": 24.07,
+      "Loyal Customers": 19.09,
+      "Cannot Lose Them": 15.04,
+      "Promising": 13.94,
+      "Champions": 13.14,
+      "New Customers": 7.93,
+      "Potential Loyalists": 4.28,
+      "Hibernating": 2.31,
+      "Lost Customers": 0.2
+    }
+  },
+  "champions_pct_customers": 6.95,
+  "champions_pct_revenue": 13.14,
+  "avg_month1_retention": 4.74,
+  "cohort_count": 23,
+  "at_risk_customers": 19802,
+  "at_risk_revenue": 3375555.16,
+  "at_risk_pct": 21.21,
+  "churned_customers": 55252,
+  "churned_revenue": 8969294.0,
+  "churn_rate": 59.18,
+  "peak_revenue_month": "2017-11",
+  "peak_revenue": 1153528.05,
+  "top_categories": {
+    "health_beauty": 1410846.79,
+    "watches_gifts": 1261951.03,
+    "bed_bath_table": 1224487.19,
+    "sports_leisure": 1119354.77,
+    "computers_accessories": 1030852.44
+  },
+  "top_states": {
+    "SP": 5770266.19,
+    "RJ": 2055690.45,
+    "MG": 1819277.61,
+    "RS": 861802.4,
+    "PR": 781919.55
+  },
+  "payment_type_distribution": {
+    "boleto": 19.0,
+    "credit_card": 73.9,
+    "debit_card": 1.5,
+    "voucher": 5.6
+  },
+  "avg_review_score": 4.09,
+  "median_delivery_days": 10.0
+}

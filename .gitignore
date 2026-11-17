@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# MySQL credentials / connection strings
+*.env
+.env
+secrets.py
+db_config.py
+
+# Large data files — not committed (must be downloaded from Kaggle)
+# data/*.csv is intentionally excluded; see data/README.md for download instructions
+data/olist_customers_dataset.csv
+data/olist_geolocation_dataset.csv
+data/olist_order_items_dataset.csv
+data/olist_order_payments_dataset.csv
+data/olist_order_reviews_dataset.csv
+data/olist_orders_dataset.csv
+data/olist_products_dataset.csv
+data/olist_sellers_dataset.csv
+data/product_category_name_translation.csv
+
+# Large exports — derived programmatically, not committed to Git
+exports/master_dataset.csv
+exports/customer_summary.csv
+exports/rfm_segments.csv
+exports/churn_analysis.csv
+
+# Power BI binary (too large for version control, but included locally)
+powerbi/*.pbix
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
